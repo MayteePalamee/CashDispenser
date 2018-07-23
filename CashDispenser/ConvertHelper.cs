@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 
 namespace CashDispenser
 {
+    /// <summary>
+    /// Convert class
+    /// </summary>
     public class ConvertHelper
     {
+        /// <summary>
+        /// Convert binary to hex
+        /// </summary>
+        /// <param name="binary">string binary pattern</param>
+        /// <returns>String Hex pattern</returns>
         protected String ConvertBinaryToHex(String binary){
             StringBuilder result = new StringBuilder(binary.Length / 8 + 1);
             int divide = binary.Length % 8;
@@ -22,7 +30,11 @@ namespace CashDispenser
 
             return result.ToString();
         }
-
+        /// <summary>
+        /// convert hex to byte
+        /// </summary>
+        /// <param name="hex">String Hex parttern</param>
+        /// <returns>byte</returns>
         protected Byte[] ConvertHexToByte(String hex) {
             hex = hex.Replace(" ", "");
             byte[] buffer = new byte[hex.Length / 2];
@@ -32,7 +44,11 @@ namespace CashDispenser
             }
             return buffer;
         }
-
+        /// <summary>
+        /// Convert byte to Hex
+        /// </summary>
+        /// <param name="bytes">Byte parttern</param>
+        /// <returns>String hex parttern</returns>
         protected String ConvertByteToHex(Byte bytes){
 
             return null;

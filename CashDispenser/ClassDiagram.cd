@@ -1,61 +1,53 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="CashDispenser.Accept">
-    <Position X="3" Y="0.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAgAAAAIAAAgAAAAIAAAAAAAAA=</HashCode>
-      <FileName>Accept.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="CashDispenser.Cashdispenser">
-    <Position X="0.5" Y="4" Width="2.25" />
+    <Position X="3" Y="0.5" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAQAAAABAAGAAIAAAACAIIgAAAAAAAAAAAAAACAAAAA=</HashCode>
+      <HashCode>AAYABAAAAAAABIAAAACAIIgAAAAAAAAEBAGABAAAAAA=</HashCode>
       <FileName>Cashdispenser.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="1.867" />
   </Class>
   <Class Name="CashDispenser.ConvertHelper">
-    <Position X="0.5" Y="0.5" Width="2.25" />
+    <Position X="0.5" Y="0.5" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAgAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAACAA=</HashCode>
       <FileName>ConvertHelper.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="CashDispenser.Events">
-    <Position X="6.75" Y="0.5" Width="1.5" />
+    <Position X="8.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAIAAAAAA=</HashCode>
       <FileName>Events.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="CashDispenser.Request">
-    <Position X="4.75" Y="0.5" Width="1.5" />
+    <Position X="8.5" Y="4.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAQAAAAEAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Request.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="CashDispenser.Response">
-    <Position X="6.75" Y="3" Width="1.5" />
+    <Position X="6" Y="0.5" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AkUAgBAQAYAQEAECgHAAIoAwACQKCcAjCAjABgAEAAQ=</HashCode>
+      <HashCode>AkAAABAQAAAQEAACAHAAJgAwACQKCcAjCAjABgAAAAQ=</HashCode>
       <FileName>Response.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="CashDispenser.SerialPortHelper">
-    <Position X="0.5" Y="2.25" Width="2.25" />
+    <Position X="0.5" Y="2.75" Width="2" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>SerialPortHelper.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Interface Name="CashDispenser.IDevicesHelper">
-    <Position X="4" Y="2.75" Width="1.5" />
+  <Class Name="CashDispenser.State">
+    <Position X="8.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAQAAAABAAAAAIAAAACAAIgAAAAAAAAAAAAAACAAAAA=</HashCode>
-      <FileName>DevicesHelper.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAAAIAAAAAAACA=</HashCode>
+      <FileName>State.cs</FileName>
     </TypeIdentifier>
-  </Interface>
+  </Class>
   <Font Name="Segoe UI" Size="9" />
 </ClassDiagram>

@@ -7,6 +7,9 @@ using System.IO.Ports;
 
 namespace CashDispenser
 {
+    /// <summary>
+    /// Serial port configuration
+    /// </summary>
     public class SerialPortHelper : ConvertHelper
     {
         /**
@@ -25,17 +28,5 @@ namespace CashDispenser
 
             return _serialport;
         }
-
-        /**
-         * Receive data from SerialPort
-         **/
-
-        /**
-         * Send data to SerialPort
-         **/
-
-        /**
-         * Convert command byte.
-         **/
     }
 }
