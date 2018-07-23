@@ -211,7 +211,7 @@ namespace CashDispenser
         /// <param name="code"></param>
         /// <param name="discription"></param>
         /// <returns></returns>
-        public State SetState(string code, string discription)
+        private State SetState(string code, string discription)
         {
             State accept = new State
             {
