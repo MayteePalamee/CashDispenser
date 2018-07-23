@@ -8,12 +8,12 @@ using System.IO.Ports;
 namespace CashDispenser
 {
     /// <summary>
-    /// 
+    /// Cash Dispenser
     /// </summary>
     public class Cashdispenser : SerialPortHelper
     {
        /// <summary>
-       /// 
+       /// Initial Command
        /// </summary>
        public Cashdispenser()
        {
