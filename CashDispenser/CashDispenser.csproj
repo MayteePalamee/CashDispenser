@@ -41,17 +41,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="State.cs" />
     <Compile Include="Cashdispenser.cs" />
-    <Compile Include="ConvertHelper.cs" />
     <Compile Include="Events.cs" />
+    <Compile Include="InitialPort.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Request.cs" />
-    <Compile Include="Response.cs" />
     <Compile Include="SerialPortHelper.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram.cd" />
+    <Compile Include="Status.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO.Ports;
+using System.Threading;
 
 namespace CashDispenser
 {
@@ -12,214 +9,264 @@ namespace CashDispenser
     /// </summary>
     public class Cashdispenser : SerialPortHelper
     {
-       /// <summary>
-       /// Initial Command
-       /// </summary>
-       public Cashdispenser()
-       {
-            new Response
-            {
-                SinglePayout = "01100010",
-                MultiplePayout = "01100113",
-                PayoutSuccessful = "010100AA",
-                PayoutFails = "010100BB",
-                Ready = "01010000",
-                EmptyNote = "01010001",
-                StockLess = "01010002",
-                NoteJam = "01010003",
-                OverLength = "01010004",
-                NoteNotExit = "01010005",
-                SensorError = "01010006",
-                DoubleNoteError = "01010007",
-                MotorError = "01010008",
-                DispeningBusy = "01010009",
-                SensorAdjusting = "0101000A",
-                ChecksumError = "0101000B",
-                LowpowerError = "0101000C",
-            };
-
-            new Request
-            {
-                Status = "011000110022",
-                Reset = "011000120023"
-            };
-        }
-        /// <summary>
-        /// Declare the event using EventHandler Message
-        /// </summary>
-        public event EventHandler<Events> MessageEvents;
-        /// <summary>
-        /// Declare the event using EventHandler Cash Dispenser
-        /// </summary>
-        public event EventHandler<Events> Dispenser;
-        /// <summary>
-        /// delegate method handle Message
-        /// </summary>
-        /// <param name="e">message</param>
-        protected virtual void OnMessage(Events e)
-        {
-            MessageEvents?.Invoke(this, e);
-        }
-        /// <summary>
-        /// delegate method handle Dispenser
-        /// </summary>
-        /// <param name="e">message</param>
-        protected virtual void OnDispenser(Events e)
-        {
-            Dispenser?.Invoke(this, e);
-        }
-
-        /**Initialzed**/
         private SerialPort _serialPort = new SerialPort();
-        State status;
+        private InitialPort initPort;
+        private string _invoke = "";
         /// <summary>
         /// Connect to Device
         /// </summary>
         /// <returns>Boolean</returns>
-        public Boolean Connect()
+        public Boolean Dispense(int qty)
         {
-            bool result = false; 
+            byte[] data = { };
+            bool result = true; 
             try
             {
-                _serialPort = Initial();
-                _serialPort.DataReceived += _serialPortDataReceived;
-
-                System.Console.Write("test");
+                if (!_serialPort.IsOpen)
+                {
+                    _serialPort.Open();
+                }
+                if (_serialPort.IsOpen)
+                {
+                    do {
+                        data = ConvertHexToByte("011000100100");
+                        _serialPort.Write(data, 0, data.Length);
+                        
+                        Thread.Sleep(2000);
+                        do { 
+                            CallState(_serialPort);
+                            Thread.Sleep(100);
+                        } while (_invoke == "");
+                        if (_invoke != Status.Ready.ToString()
+                            && _invoke != Status.Payout_successful.ToString())
+                        {
+                            result = false;
+                            break;
+                        }
+                        qty--;
+                        Console.WriteLine("Remain : "+ qty);
+                        Console.WriteLine("State : " + _invoke);
+                    } while (qty != 0);
+                }
+                else
+                {
+                    _invoke = Status.Disconnected.ToString();
+                }
+                
+                Console.WriteLine("Balance Note : " + qty);
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                OnMessage(new Events(e.Message));
+                if (_serialPort.IsOpen)
+                {
+                    _serialPort.Close();
+                }
+                _invoke = Status.Disconnected.ToString();
+                Console.WriteLine("exception : " + exception);
+            }
+            if (_serialPort.IsOpen)
+            {
+                _serialPort.DiscardOutBuffer();
+                _serialPort.DiscardInBuffer();
+                _serialPort.Close();
             }
             return result;
         }
 
-        private void _serialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            OnDispenser(new Events("Dispenser"));
-        }
-
-        /// <summary>
-        /// get status from device
-        /// </summary>
-        /// <returns>data object</returns>
-        public State State()
-        {
-            status = new State();
-            try
-            {
-
-            }
-            catch (Exception e)
-            {
-                OnMessage(new Events(e.Message));
-            }
-            return status;
-        }
         /// <summary>
         /// send command reset device
         /// </summary>
         /// <returns>Boolean</returns>
         public Boolean Reset()
         {
-            bool result = false;
+            byte[] data = { };
+            bool reset = false;
             try
             {
-
+                if (!_serialPort.IsOpen)
+                {
+                    _serialPort.Open();
+                }
+                if (_serialPort.IsOpen)
+                {
+                    data = ConvertHexToByte("011000120000");
+                    _serialPort.Write(data, 0, data.Length);
+                    Thread.Sleep(100);
+                    CallState(_serialPort);
+                    Thread.Sleep(100);
+                }
+                else
+                {
+                    _invoke = Status.Disconnected.ToString();
+                }
+                if (_invoke.Equals(Status.Ready.ToString())){
+                    reset = true;
+                }
             }
-            catch (Exception e)
-            {
-                OnMessage(new Events(e.Message));
-            }
-            return result;
-        }
-        /// <summary>
-        /// send command disabled device
-        /// </summary>
-        /// <returns>boolean</returns>
-        public Boolean Disabled()
-        {
-            bool result = false;
-            try
-            {
-
-            }
-            catch (Exception e)
-            {
-                OnMessage(new Events(e.Message));
-            }
-            return result;
-        }
-        /// <summary>
-        /// disconnect device
-        /// </summary>
-        /// <returns>Boolean</returns>
-        public Boolean Disconnect()
-        {
-            bool result = false;
-            try
+            catch (Exception exception)
             {
                 if (_serialPort.IsOpen)
                 {
                     _serialPort.Close();
-                    result = true;
+                }
+                Console.WriteLine("exception : " + exception);
+            }
+            if (_serialPort.IsOpen)
+            {
+                _serialPort.DiscardOutBuffer();
+                _serialPort.DiscardInBuffer();
+                _serialPort.Close();
+            }
+                return reset;
+        }
+        /// <summary>
+        /// status device
+        /// </summary>
+        /// <returns>status</returns>
+        public string CurrentStatus()
+        {
+            byte[] data = { };
+            try
+            {
+                if (!_serialPort.IsOpen)
+                {
+                    _serialPort.Open();
+                }
+                if (_serialPort.IsOpen)
+                {
+                    do
+                    {
+                        data = ConvertHexToByte("011000110000");
+                        _serialPort.Write(data, 0, data.Length);
+                        Thread.Sleep(100);
+                        CallState(_serialPort);
+                    } while (_invoke == "");
+                }
+                else
+                {
+                    _invoke = Status.Disconnected.ToString();
                 }
             }
-            catch (Exception e)
+            catch(Exception exception)
             {
-                OnMessage(new Events(e.Message));
+                if (_serialPort.IsOpen)
+                {
+                    _serialPort.Close();
+                }
+                _invoke = Status.Disconnected.ToString();
+                Console.WriteLine("exception : " + exception);
             }
-            return result;
+            if (_serialPort.IsOpen)
+            {
+                _serialPort.DiscardOutBuffer();
+                _serialPort.DiscardInBuffer();
+                _serialPort.Close();
+            }
+            return _invoke;
+        }
+
+        /// <summary>
+        /// setter port name
+        /// </summary>
+        /// <param name="port">Port Name String</param>
+        public void SetPort(string port)
+        {
+            initPort = new InitialPort();
+            initPort.Comport = port;
+            initPort.BaudRate = 9600;
+            initPort.DataBits = 8;
+            initPort.DtrEnable = true;
+
+            _serialPort = Initial(initPort);
         }
         /// <summary>
-        /// send command Enable Device
+        /// getter port name
         /// </summary>
-        /// <returns>Boolean</returns>
-        public Boolean Enabled()
+        /// <returns>PortName String</returns>
+        public string GetPort()
         {
-            bool result = false;
-            try
-            {
-
-            }
-            catch (Exception e)
-            {
-                OnMessage(new Events(e.Message));
-            }
-            return result;
+            return _serialPort.PortName == null ? "" : _serialPort.PortName;
         }
-        /// <summary>
-        /// send command to device
-        /// </summary>
-        /// <param name="command">command for send to device</param>
-        /// <returns>Boolean</returns>
-        public Boolean Transmitte(string command)
-        {
-            bool result = false;
-            try
-            {
 
-            }
-            catch (Exception e)
+        private delegate void getStatus(string data);
+        private void StateInfo(string data)
+        {
+            string value = data.Equals("") ? data.ToUpper() : data.ToUpper().Substring(0, 8);
+            switch (value)
             {
-                OnMessage(new Events(e.Message));
+                case "01010000":
+                    _invoke = Status.Ready.ToString();
+                    break;
+                case "01100010":
+                    _invoke = Status.Single_machine_payout.ToString();
+                    break;
+                case "01100113":
+                    _invoke = Status.Multiple_machine_payout.ToString();
+                    break;
+                case "010100AA":
+                    _invoke = Status.Payout_successful.ToString();
+                    break;
+                case "010100BB":
+                    _invoke = Status.Payout_fails.ToString();
+                    break;
+                case "01010001":
+                    _invoke = Status.Empty_note.ToString();
+                    break;
+                case "01010002":
+                    _invoke = Status.Stock_less.ToString();
+                    break;
+                case "01010003":
+                    _invoke = Status.Note_jam.ToString();
+                    break;
+                case "01010004":
+                    _invoke = Status.Over_length.ToString();
+                    break;
+                case "01010005":
+                    _invoke = Status.Note_Not_Exit.ToString();
+                    break;
+                case "01010006":
+                    _invoke = Status.Sensor_Error.ToString();
+                    break;
+                case "01010007":
+                    _invoke = Status.Double_note_error.ToString();
+                    break;
+                case "01010008":
+                    _invoke = Status.Motor_Error.ToString();
+                    break;
+                case "01010009":
+                    _invoke = Status.Dispensing_busy.ToString();
+                    break;
+                case "0101000A":
+                    _invoke = Status.Sensor_adjusting.ToString();
+                    break;
+                case "0101000B":
+                    _invoke = Status.Checksum_Error.ToString();
+                    break;
+                case "0101000C":
+                    _invoke = Status.Low_power_Error.ToString();
+                    break;
+                default:
+                    _invoke = data.ToUpper();
+                    break;
             }
-            return result;
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="code"></param>
-        /// <param name="discription"></param>
-        /// <returns></returns>
-        private State SetState(string code, string discription)
+        private void CallState(SerialPort serialPort)
         {
-            State accept = new State
+            byte[] rxBytes = { };
+            if (serialPort.IsOpen)
             {
-                Code = code,
-                Discription = discription
-            };
-
-            return accept;
+                serialPort.ReadTimeout = 1000;
+                int count = serialPort.BytesToRead;
+                int totBytesRead = 0;
+                rxBytes = new byte[count];
+                while (totBytesRead < count)
+                {
+                    int bytesRead = serialPort.Read(rxBytes, 0, count - totBytesRead);
+                    totBytesRead += bytesRead;
+                }
+                getStatus get = new getStatus(StateInfo);
+                get(ConvertByteToString(rxBytes));
+            }
         }
     }
 }
