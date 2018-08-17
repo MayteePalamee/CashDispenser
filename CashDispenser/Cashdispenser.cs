@@ -32,13 +32,14 @@ namespace CashDispenser
                         data = ConvertHexToByte("011000100100");
                         _serialPort.Write(data, 0, data.Length);
                         
-                        Thread.Sleep(2000);
-                        do { 
-                            CallState(_serialPort);
+                        Thread.Sleep(2500);
+                        do {
+                            CallbackState();
                             Thread.Sleep(100);
                         } while (_invoke == "");
                         if (_invoke != Status.Ready.ToString()
-                            && _invoke != Status.Payout_successful.ToString())
+                            && _invoke != Status.Payout_successful.ToString()
+                            && _invoke != "")
                         {
                             result = false;
                             break;
@@ -92,7 +93,7 @@ namespace CashDispenser
                     data = ConvertHexToByte("011000120000");
                     _serialPort.Write(data, 0, data.Length);
                     Thread.Sleep(100);
-                    CallState(_serialPort);
+                    CallbackState();
                     Thread.Sleep(100);
                 }
                 else
@@ -134,13 +135,7 @@ namespace CashDispenser
                 }
                 if (_serialPort.IsOpen)
                 {
-                    do
-                    {
-                        data = ConvertHexToByte("011000110000");
-                        _serialPort.Write(data, 0, data.Length);
-                        Thread.Sleep(100);
-                        CallState(_serialPort);
-                    } while (_invoke == "");
+                    CallbackState();
                 }
                 else
                 {
@@ -164,12 +159,41 @@ namespace CashDispenser
             }
             return _invoke;
         }
-
-        /// <summary>
-        /// setter port name
-        /// </summary>
-        /// <param name="port">Port Name String</param>
-        public void SetPort(string port)
+        private void CallbackState()
+        {
+            byte[] data = { };
+            try
+            {
+                if (!_serialPort.IsOpen)
+                {
+                    _serialPort.Open();
+                }
+                if (_serialPort.IsOpen)
+                {
+                    do
+                    {
+                        data = ConvertHexToByte("011000110000");
+                        _serialPort.Write(data, 0, data.Length);
+                        Thread.Sleep(100);
+                        CallState(_serialPort);
+                    } while (_invoke == "");
+                }
+            }
+            catch (Exception exception)
+            {
+                if (_serialPort.IsOpen)
+                {
+                    _serialPort.Close();
+                }
+                _invoke = Status.Disconnected.ToString();
+                Console.WriteLine("exception : " + exception);
+            }
+        }
+            /// <summary>
+            /// setter port name
+            /// </summary>
+            /// <param name="port">Port Name String</param>
+            public void SetPort(string port)
         {
             initPort = new InitialPort();
             initPort.Comport = port;
