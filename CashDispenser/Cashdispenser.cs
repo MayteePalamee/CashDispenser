@@ -7,11 +7,11 @@ namespace CashDispenser
     /// <summary>
     /// Cash Dispenser
     /// </summary>
-    public class Cashdispenser : SerialPortHelper
+    public class CashDispenser : SerialPortHelper
     {
         private SerialPort _serialPort = new SerialPort();
         private InitialPort initPort;
-        private string _invoke = "";
+        private Status _invoke = Status.Unknown;
         /// <summary>
         /// Connect to Device
         /// </summary>
@@ -32,26 +32,29 @@ namespace CashDispenser
                         data = ConvertHexToByte("011000100100");
                         _serialPort.Write(data, 0, data.Length);
                         
-                        Thread.Sleep(2500);
+                        Thread.Sleep(2800);
                         do {
                             CallbackState();
-                            Thread.Sleep(100);
-                        } while (_invoke == "");
-                        if (_invoke != Status.Ready.ToString()
-                            && _invoke != Status.Payout_successful.ToString()
-                            && _invoke != "")
+                            Thread.Sleep(1000);
+                        } while (_invoke == Status.Unknown);
+                        Console.WriteLine("State : " + _invoke);
+                        if (_invoke != Status.Ready
+                            && _invoke != Status.Payout_successful
+                            && _invoke != Status.Unknown
+                            && _invoke != Status.Dispensing_busy)
                         {
                             result = false;
                             break;
                         }
                         qty--;
+                                            
                         Console.WriteLine("Remain : "+ qty);
-                        Console.WriteLine("State : " + _invoke);
+                        
                     } while (qty != 0);
                 }
                 else
                 {
-                    _invoke = Status.Disconnected.ToString();
+                    _invoke = Status.Disconnected;
                 }
                 
                 Console.WriteLine("Balance Note : " + qty);
@@ -62,7 +65,7 @@ namespace CashDispenser
                 {
                     _serialPort.Close();
                 }
-                _invoke = Status.Disconnected.ToString();
+                _invoke = Status.Disconnected;
                 Console.WriteLine("exception : " + exception);
             }
             if (_serialPort.IsOpen)
@@ -98,9 +101,9 @@ namespace CashDispenser
                 }
                 else
                 {
-                    _invoke = Status.Disconnected.ToString();
+                    _invoke = Status.Disconnected;
                 }
-                if (_invoke.Equals(Status.Ready.ToString())){
+                if (_invoke.Equals(Status.Ready)){
                     reset = true;
                 }
             }
@@ -124,7 +127,7 @@ namespace CashDispenser
         /// status device
         /// </summary>
         /// <returns>status</returns>
-        public string CurrentStatus()
+        public Status CurrentStatus()
         {
             byte[] data = { };
             try
@@ -136,10 +139,11 @@ namespace CashDispenser
                 if (_serialPort.IsOpen)
                 {
                     CallbackState();
+                    Console.WriteLine("current status : " + _invoke);
                 }
                 else
                 {
-                    _invoke = Status.Disconnected.ToString();
+                    _invoke = Status.Disconnected;
                 }
             }
             catch(Exception exception)
@@ -148,7 +152,7 @@ namespace CashDispenser
                 {
                     _serialPort.Close();
                 }
-                _invoke = Status.Disconnected.ToString();
+                _invoke = Status.Disconnected;
                 Console.WriteLine("exception : " + exception);
             }
             if (_serialPort.IsOpen)
@@ -176,7 +180,7 @@ namespace CashDispenser
                         _serialPort.Write(data, 0, data.Length);
                         Thread.Sleep(100);
                         CallState(_serialPort);
-                    } while (_invoke == "");
+                    } while (_invoke == Status.Unknown);
                 }
             }
             catch (Exception exception)
@@ -185,7 +189,7 @@ namespace CashDispenser
                 {
                     _serialPort.Close();
                 }
-                _invoke = Status.Disconnected.ToString();
+                _invoke = Status.Disconnected;
                 Console.WriteLine("exception : " + exception);
             }
         }
@@ -219,58 +223,58 @@ namespace CashDispenser
             switch (value)
             {
                 case "01010000":
-                    _invoke = Status.Ready.ToString();
+                    _invoke = Status.Ready;
                     break;
                 case "01100010":
-                    _invoke = Status.Single_machine_payout.ToString();
+                    _invoke = Status.Single_machine_payout;
                     break;
                 case "01100113":
-                    _invoke = Status.Multiple_machine_payout.ToString();
+                    _invoke = Status.Multiple_machine_payout;
                     break;
                 case "010100AA":
-                    _invoke = Status.Payout_successful.ToString();
+                    _invoke = Status.Payout_successful;
                     break;
                 case "010100BB":
-                    _invoke = Status.Payout_fails.ToString();
+                    _invoke = Status.Payout_fails;
                     break;
                 case "01010001":
-                    _invoke = Status.Empty_note.ToString();
+                    _invoke = Status.Empty_note;
                     break;
                 case "01010002":
-                    _invoke = Status.Stock_less.ToString();
+                    _invoke = Status.Stock_less;
                     break;
                 case "01010003":
-                    _invoke = Status.Note_jam.ToString();
+                    _invoke = Status.Note_jam;
                     break;
                 case "01010004":
-                    _invoke = Status.Over_length.ToString();
+                    _invoke = Status.Over_length;
                     break;
                 case "01010005":
-                    _invoke = Status.Note_Not_Exit.ToString();
+                    _invoke = Status.Note_Not_Exit;
                     break;
                 case "01010006":
-                    _invoke = Status.Sensor_Error.ToString();
+                    _invoke = Status.Sensor_Error;
                     break;
                 case "01010007":
-                    _invoke = Status.Double_note_error.ToString();
+                    _invoke = Status.Double_note_error;
                     break;
                 case "01010008":
-                    _invoke = Status.Motor_Error.ToString();
+                    _invoke = Status.Motor_Error;
                     break;
                 case "01010009":
-                    _invoke = Status.Dispensing_busy.ToString();
+                    _invoke = Status.Dispensing_busy;
                     break;
                 case "0101000A":
-                    _invoke = Status.Sensor_adjusting.ToString();
+                    _invoke = Status.Sensor_adjusting;
                     break;
                 case "0101000B":
-                    _invoke = Status.Checksum_Error.ToString();
+                    _invoke = Status.Checksum_Error;
                     break;
                 case "0101000C":
-                    _invoke = Status.Low_power_Error.ToString();
+                    _invoke = Status.Low_power_Error;
                     break;
                 default:
-                    _invoke = data.ToUpper();
+                    _invoke = Status.Unknown;
                     break;
             }
         }
@@ -279,8 +283,10 @@ namespace CashDispenser
             byte[] rxBytes = { };
             if (serialPort.IsOpen)
             {
-                serialPort.ReadTimeout = 1000;
-                int count = serialPort.BytesToRead;
+                //serialPort.ReadTimeout = 1000;
+                int count = 0;
+                count = serialPort.BytesToRead;
+
                 int totBytesRead = 0;
                 rxBytes = new byte[count];
                 while (totBytesRead < count)
